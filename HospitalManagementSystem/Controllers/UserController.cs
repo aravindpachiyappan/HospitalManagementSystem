@@ -1,6 +1,7 @@
 ﻿using Hospital_ManagementSystem_Api.DBContext;
 using Hospital_ManagementSystem_Api.DTOs.UsersDTO;
 using Hospital_ManagementSystem_Api.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ namespace Hospital_ManagementSystem_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class UserController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -200,6 +202,36 @@ namespace Hospital_ManagementSystem_Api.Controllers
             return Ok(response);
         }
 
+        [HttpPost("user-list")]
+        public async Task<ActionResult<List<UserLIstResponseDTO>>> UserList(GetAllUserRequestDTO requestDTO)
+        {
+            var query = _context.userRoles
+                .Include(x => x.User)
+                .Include(x => x.Role)
+                .Where(x => x.IsActive && !x.IsDeleted);
 
+            if (!string.IsNullOrWhiteSpace(requestDTO.SearchString))
+            {
+                string search = requestDTO.SearchString.Trim().ToLower();
+
+                query = query.Where(x =>
+                    (x.User != null && x.User.UserName != null && x.User.UserName.ToLower().Contains(search)) ||
+                    (x.User != null && x.User.Email != null && x.User.Email.ToLower().Contains(search)) ||
+                    (x.Role != null && x.Role.RoleName != null && x.Role.RoleName.ToLower().Contains(search))
+                );
+            }
+
+            var result = await query
+                .Select(x => new UserLIstResponseDTO
+                {
+                    UsertId = x.User!.UserId,
+                    UserName = x.User.UserName!,
+                    Email = x.User.Email!,
+                    UserRoles = x.Role!.RoleName!
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
     }
 }

@@ -52,6 +52,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        users = await Http.PostFromJsonAsync<List<UserListRequestDTO>>("api/User") ?? new();
+        // users = await Http.PostFromJsonAsync<List<UserListRequestDTO>>("api/User") ?? new();
     }
 }
