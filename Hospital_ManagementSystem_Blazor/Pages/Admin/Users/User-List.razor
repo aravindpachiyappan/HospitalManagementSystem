@@ -1,0 +1,57 @@
+﻿@page "/user-list"
+@using Hospital_ManagementSystem_Blazor.DTOs.UsersDTO
+@inject HttpClient Http
+@using System.Net.Http.Json
+
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        User Lists
+    </MudText>
+
+    <MudTable Items="@users" Hover="true" Striped="true" Bordered="true">
+
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>User Name</MudTh>
+            <MudTh>Email</MudTh>
+            @* <MudTh>Roles</MudTh> *@
+            <MudTh>Action</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.UserId</MudTd>
+            <MudTd DataLabel="User Name">@context.UserName</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            @* <MudTd DataLabel="Roles">@context.Roles</MudTd> *@
+            <MudTd>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Small">
+                    Edit
+                </MudButton>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Error"
+                           Size="Size.Small"
+                           Class="ms-2">
+                    Delete
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Color="Color.Error">No users found.</MudText>
+        </NoRecordsContent>
+
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<UserListRequestDTO> users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Http.PostFromJsonAsync<List<UserListRequestDTO>>("api/User") ?? new();
+    }
+}

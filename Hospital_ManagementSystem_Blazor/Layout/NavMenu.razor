@@ -1,0 +1,112 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Welcome Hospital</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+
+<nav class="nav flex-column">
+
+        <!-- Home -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <MudIcon Icon="@Icons.Material.Filled.Home" Class="me-2" />
+                Home
+            </NavLink>
+        </div>
+
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/user-list">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Class="me-2" />
+                        Manage Users
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/departments-list">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Class="me-2" />
+                        Departments
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/room-list">
+                        <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Class="me-2" />
+                        Rooms
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/reports">
+                        <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="me-2" />
+                        Reports
+                    </NavLink>
+                </div>
+
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- Doctor -->
+        <AuthorizeView Roles="Doctor">
+            <Authorized>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Doctor-List">
+                <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Class="me-2" />
+                Doctor
+            </NavLink>
+        </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- Nurse -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="nurse-list">
+                <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Class="me-2" />
+                Nurse
+            </NavLink>
+        </div>
+
+        <!-- Lab -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="lab-list">
+                <MudIcon Icon="@Icons.Material.Filled.Science" Class="me-2" />
+                Lab
+            </NavLink>
+        </div>
+
+        <!-- Pharmacy -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="pharmacy-list">
+                <MudIcon Icon="@Icons.Material.Filled.LocalPharmacy" Class="me-2" />
+                Pharmacy
+            </NavLink>
+        </div>
+
+        <!-- Billing -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="billing-list">
+                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="me-2" />
+                Billing
+            </NavLink>
+        </div>
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

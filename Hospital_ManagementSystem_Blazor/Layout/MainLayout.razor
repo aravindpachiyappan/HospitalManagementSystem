@@ -1,0 +1,63 @@
+@inherits LayoutComponentBase
+
+@using Hospital_ManagementSystem_Blazor.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@if (IsLoginPage())
+{
+    <div class="page login-layout">
+        <main>
+            <article class="content">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+else
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <div class="top-row px-4 d-flex justify-end align-center" style="height:60px;">
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Error"
+                           StartIcon="@Icons.Material.Filled.Logout"
+                           OnClick="Logout">
+                    Logout
+                </MudButton>
+
+            </div>
+
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+
+@code
+{
+    private bool IsLoginPage()
+    {
+        var path = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
+
+        return path == "login" || path == "shoolwebsite";
+    }
+
+    private async Task Logout()
+    {
+        Console.WriteLine("Logout Clicked");
+        await AuthService.Logout();
+        Navigation.NavigateTo("login");
+    }
+}

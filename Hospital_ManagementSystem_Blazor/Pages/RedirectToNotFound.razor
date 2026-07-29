@@ -1,0 +1,34 @@
+﻿@page "/not-found"
+@layout MainLayout
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column align-center justify-center"
+              Style="min-height:100vh; background:linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); text-align:center; position:relative; overflow:hidden;">
+
+    <!-- Decorative unplugged icons -->
+    <MudIcon Icon="@Icons.Material.Filled.PowerOff"
+             Style="position:absolute; top:15%; left:12%; font-size:70px; color:rgba(0,0,0,0.15); transform:rotate(-20deg);" />
+    <MudIcon Icon="@Icons.Material.Filled.PowerOff"
+             Style="position:absolute; bottom:15%; right:12%; font-size:70px; color:rgba(0,0,0,0.15); transform:rotate(160deg);" />
+
+    <MudText Style="font-size:7rem; font-weight:900; color:#1f2937; line-height:1;">
+        404
+    </MudText>
+
+    <MudText Typo="Typo.h5" Class="font-weight-bold mb-2" Style="color:#1f2937; letter-spacing:0.05em;">
+        PAGE NOT FOUND
+    </MudText>
+
+    <MudText Typo="Typo.body1" Class="mb-6" Style="max-width:420px; color:#4b5563;">
+        Sorry, the page you're looking for doesn't exist or may have been moved.
+    </MudText>
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Dark"
+               StartIcon="@Icons.Material.Filled.Home"
+               Style="text-transform:none; border-radius:8px;"
+               OnClick="@(() => Navigation.NavigateTo("/"))">
+        Back to Home
+    </MudButton>
+
+</MudContainer>

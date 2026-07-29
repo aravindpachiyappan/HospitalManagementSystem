@@ -1,0 +1,173 @@
+@page "/login"
+@attribute [AllowAnonymous]
+@using Hospital_ManagementSystem_Blazor.DTOs.Auth
+@using Hospital_ManagementSystem_Blazor.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="login-container">
+    <div class="auth-wrapper @(showRegister ? "toggled" : "")">
+
+        <div class="background-shape"></div>
+        <div class="secondary-shape"></div>
+
+        <!-- LOGIN -->
+        <div class="credentials-panel signin">
+
+            <h2 class="slide-element">Login</h2>
+
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+
+                <div class="field-wrapper slide-element">
+                    <input type="text" @bind="loginModel.Email" required />
+                    <label>Email</label>
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    <input type="password" @bind="loginModel.Password" required />
+                    <label>Password</label>
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    <button class="submit-button" type="submit">
+                        Login
+                    </button>
+                </div>
+
+                <div class="switch-link slide-element">
+                    <p>
+                        Don't have an account?
+                        <br />
+                        <a href="javascript:void(0)" @onclick="ShowRegister">
+                            Sign Up
+                        </a>
+                    </p>
+                </div>
+
+            </EditForm>
+
+        </div>
+
+        <div class="welcome-section signin">
+            <h2 class="slide-element">
+                WELCOME BACK!
+            </h2>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="credentials-panel signup">
+
+            <h2 class="slide-element">Register</h2>
+
+            <EditForm Model="@registerModel" OnValidSubmit="Register">
+                <DataAnnotationsValidator />
+
+                <div class="field-wrapper slide-element">
+                    <input type="text" @bind="registerModel.UserName" required />
+                    <label>Username</label>
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    <input type="email" @bind="registerModel.Email" required />
+                    <label>Email</label>
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    <input type="password" @bind="registerModel.Password" required />
+                    <label>Password</label>
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    <button class="submit-button" type="submit">
+                        Register
+                    </button>
+                </div>
+
+                <div class="switch-link slide-element">
+                    <p>
+                        Already have an account?
+                        <br />
+                        <a href="javascript:void(0)" @onclick="ShowLogin">
+                            Sign In
+                        </a>
+                    </p>
+                </div>
+
+            </EditForm>
+
+        </div>
+
+        <div class="welcome-section signup">
+            <h2 class="slide-element">
+                WELCOME!
+            </h2>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>
+            Made with ❤️ by
+            <a href="#">Aravind</a>
+        </p>
+    </div>
+</div>
+
+@code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask != null)
+        {
+            var authState = await AuthStateTask;
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                Navigation.NavigateTo("/");
+            }
+        }
+    }
+
+    private bool showRegister = false;
+
+    private LoginRequestDTO loginModel = new();
+    private RegisterRequestDTO registerModel = new();
+
+    private void ShowRegister()
+    {
+        showRegister = true;
+    }
+
+    private void ShowLogin()
+    {
+        showRegister = false;
+    }
+
+    private async Task HandleLogin()
+    {
+        var result = await AuthService.Login(loginModel);
+
+        if (result)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task Register()
+    {
+        var result = await AuthService.Register(registerModel);
+
+        if (result)
+        {
+            showRegister = false;
+        }
+    }
+}

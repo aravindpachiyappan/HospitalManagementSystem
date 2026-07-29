@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="HospitalManagementSystem/Hospital_ManagementSystem_Api.csproj" />
+  <Project Path="Hospital_ManagementSystem_Blazor/Hospital_ManagementSystem_Blazor.csproj" />
+</Solution>
