@@ -1,4 +1,4 @@
-﻿using Hospital_ManagementSystem_Api.DBContext;
+using Hospital_ManagementSystem_Api.DBContext;
 using Hospital_ManagementSystem_Api.DTOs.UsersDTO;
 using Hospital_ManagementSystem_Api.Entity;
 using Microsoft.AspNetCore.Authorization;
@@ -23,6 +23,8 @@ namespace Hospital_ManagementSystem_Api.Controllers
         [HttpPost("add-user")]
         public async Task<IActionResult> AddUser(AddUsersRequestDTO requestDTO)
         {
+            Console.WriteLine($"[DEBUG] AddUser Received - UserName: '{requestDTO.UserName}', Email: '{requestDTO.Email}', Password: '{requestDTO.Password}', RoleId: {requestDTO.RoleId}");
+
             // 1. Check whether username or email already exists
             var existingUser = await _context.Users
                 .FirstOrDefaultAsync(x =>
@@ -54,27 +56,39 @@ namespace Hospital_ManagementSystem_Api.Controllers
             // Save user first to get generated UserId
             await _context.SaveChangesAsync();
 
-            // 3. Get default role
-            var defaultRole = await _context.Roles
-                .FirstOrDefaultAsync(x => x.RoleName == "Patient");
+            // 3. Determine the role to assign
+            int targetRoleId = requestDTO.RoleId ?? 0;
+            Role? assignedRole = null;
 
-            if (defaultRole == null)
+            if (targetRoleId > 0)
+            {
+                assignedRole = await _context.Roles
+                    .FirstOrDefaultAsync(x => x.RoleId == targetRoleId && x.IsActive && !x.IsDeleted);
+            }
+
+            if (assignedRole == null)
+            {
+                assignedRole = await _context.Roles
+                    .FirstOrDefaultAsync(x => x.RoleName == "Patient" && x.IsActive && !x.IsDeleted);
+            }
+
+            if (assignedRole == null)
             {
                 return BadRequest(new
                 {
-                    Message = "Default role 'Patient' not found"
+                    Message = "Assigned role or default role 'Patient' not found"
                 });
             }
 
-            // 4. Assign default role to user
+            // 4. Assign role to user
             var userRole = new UserRole
             {
                 UserId = newUser.UserId,
-                RoleId = defaultRole.RoleId,
+                RoleId = assignedRole.RoleId,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = 1,
-                IsActive= true,
-                IsDeleted= false
+                IsActive = true,
+                IsDeleted = false
             };
 
             _context.userRoles.Add(userRole);
@@ -232,6 +246,45 @@ namespace Hospital_ManagementSystem_Api.Controllers
                 .ToListAsync();
 
             return Ok(result);
+        }
+
+        [HttpPost("get-user/{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var userRole = await _context.userRoles
+                .Include(x => x.User)
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.UserId == id && x.IsActive && !x.IsDeleted);
+
+            if (userRole == null || userRole.User == null)
+            {
+                return NotFound(new { Message = "User not found" });
+            }
+
+            return Ok(new
+            {
+                UserId = userRole.User.UserId,
+                UserName = userRole.User.UserName,
+                Email = userRole.User.Email,
+                Password = userRole.User.Password,
+                RoleId = userRole.RoleId,
+                RoleName = userRole.Role?.RoleName
+            });
+        }
+
+        [HttpPost("role-list")]
+        public async Task<IActionResult> RoleList()
+        {
+            var roles = await _context.Roles
+                .Where(x => x.IsActive && !x.IsDeleted)
+                .Select(x => new
+                {
+                    x.RoleId,
+                    x.RoleName
+                })
+                .ToListAsync();
+
+            return Ok(roles);
         }
     }
 }

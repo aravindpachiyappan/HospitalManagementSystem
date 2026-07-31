@@ -1,4 +1,4 @@
-@page "/add-user"
+@page "/edit-user/{UserId:int}"
 
 @using Hospital_ManagementSystem_Blazor.DTOs.UsersDTO
 @using System.Net.Http.Json
@@ -9,10 +9,8 @@
 
 <MudPaper Class="pa-4">
 
-    <div class="d-flex justify-space-between align-center mb-4">
-
     <MudText Typo="Typo.h4" Class="mb-4">
-        Add Users
+        Edit User
     </MudText>
 
     <MudButton Variant="Variant.Filled"
@@ -21,13 +19,11 @@
                Class="mb-4">
         Back
     </MudButton>
-    </div>
 
     <MudTextField T="string"
                   Label="User Name"
                   @bind-Value="model.UserName"
                   Required="true"
-                  RequiredError="Please select a UserName."
                   Variant="Variant.Outlined"
                   Class="mb-3"/>
 
@@ -35,7 +31,6 @@
                   Label="Email"
                   @bind-Value="model.Email"
                   Required="true"
-                  RequiredError="Please select a Email."
                   Variant="Variant.Outlined"
                   Class="mb-3" />
 
@@ -45,51 +40,50 @@
                   InputType="InputType.Password"
                   Variant="Variant.Outlined"
                   Required="true"
-                  RequiredError="Please select a Password."
                   Class="mb-3" />
 
-    <MudSelect T="int?"
+    <MudSelect T="int"
                Label="Role"
                @bind-Value="model.RoleId"
                Variant="Variant.Outlined"
                Required="true"
-               RequiredError="Please select a role."
                Class="mb-4">
-
         @foreach (var role in roles)
         {
-            <MudSelectItem T="int?" Value="@role.RoleId">
-                @role.RoleName
-            </MudSelectItem>
+            <MudSelectItem T="int" Value="@role.RoleId">@role.RoleName</MudSelectItem>
         }
-
     </MudSelect>
 
     <MudButton Variant="Variant.Filled"
                Color="Color.Primary"
-               OnClick="CreateUser">
-        Save
+               OnClick="UpdateUser">
+        Update
     </MudButton>
 </MudPaper>
 
 @code {
 
-    private AddUsersRequestDTO model = new();
+    [Parameter]
+    public int UserId { get; set; }
+
+    private UpdateUserRequestDTO model = new();
     private List<RoleDTO> roles = new();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadRoles();
+        await LoadUserDetails();
     }
 
     private async Task LoadRoles()
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<List<RoleDTO>>("user/role-list");
-            if (response != null)
+            var response = await Http.PostAsJsonAsync("user/role-list", new { });
+
+            if (response.IsSuccessStatusCode)
             {
-                roles = response;
+                roles = await response.Content.ReadFromJsonAsync<List<RoleDTO>>() ?? new();
             }
         }
         catch (Exception ex)
@@ -98,30 +92,66 @@
         }
     }
 
-    private async Task CreateUser()
+    private async Task LoadUserDetails()
     {
-        if (model.RoleId == null)
+        try
+        {
+            // Fetch single user from api/user/get-user/{id}
+            var response = await Http.PostAsJsonAsync($"user/get-user/{UserId}", new { });
+
+        if (response.IsSuccessStatusCode)
+            {
+               var details = await response.Content.ReadFromJsonAsync<UserDetailResponse>();
+
+    if (details != null)
+    {
+        model.UserId = details.UserId;
+        model.UserName = details.UserName;
+        model.Email = details.Email;
+        model.Password = details.Password;
+        model.RoleId = details.RoleId;
+    }
+}
+            else
+            {
+                Snackbar.Add("Failed to load user details.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading user: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task UpdateUser()
+    {
+        if (model.RoleId == 0)
         {
             Snackbar.Add("Please select a role.", Severity.Warning);
             return;
         }
 
-        var response = await Http.PostAsJsonAsync("user/add-user", model);
+        var response = await Http.PostAsJsonAsync("user/update-user", model);
 
         if (response.IsSuccessStatusCode)
         {
-            Snackbar.Add("User created successfully.", Severity.Success);
-            model = new AddUsersRequestDTO();
+            Snackbar.Add("User updated successfully.", Severity.Success);
             Navigation.NavigateTo("/user-list");
         }
         else
         {
-            Snackbar.Add("Failed to create user.", Severity.Error);
+            var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            Snackbar.Add(error?.Message ?? "Failed to update user.", Severity.Error);
         }
     }
 
     public void ReturnList()
     {
         Navigation.NavigateTo("/user-list");
+    }
+
+    public class ErrorResponse
+    {
+        public string Message { get; set; } = string.Empty;
     }
 }

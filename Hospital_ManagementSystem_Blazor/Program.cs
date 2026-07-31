@@ -10,7 +10,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new Uri("https://localhost:7049/"));
+builder.Services.AddScoped(sp => new Uri("https://localhost:7049/api/"));
 
 builder.Services.AddScoped(sp =>
 {

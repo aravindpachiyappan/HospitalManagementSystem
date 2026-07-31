@@ -1,13 +1,22 @@
-﻿@page "/user-list"
+@page "/user-list"
 @using Hospital_ManagementSystem_Blazor.DTOs.UsersDTO
 @inject HttpClient Http
+@inject NavigationManager Navigation
 @using System.Net.Http.Json
 
-
 <MudPaper Class="pa-4">
-    <MudText Typo="Typo.h4" Class="mb-4">
-        User Lists
-    </MudText>
+    
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">
+            User Lists
+        </MudText>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="GoToAddUser">
+            Add User
+        </MudButton>
+    </div>
 
     <MudTable Items="@users" Hover="true" Striped="true" Bordered="true">
 
@@ -15,19 +24,20 @@
             <MudTh>ID</MudTh>
             <MudTh>User Name</MudTh>
             <MudTh>Email</MudTh>
-            @* <MudTh>Roles</MudTh> *@
+            <MudTh>Roles</MudTh>
             <MudTh>Action</MudTh>
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd DataLabel="ID">@context.UserId</MudTd>
+            <MudTd DataLabel="ID">@context.UsertId</MudTd>
             <MudTd DataLabel="User Name">@context.UserName</MudTd>
             <MudTd DataLabel="Email">@context.Email</MudTd>
-            @* <MudTd DataLabel="Roles">@context.Roles</MudTd> *@
+            <MudTd DataLabel="Roles">@context.UserRoles</MudTd>
             <MudTd>
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
-                           Size="Size.Small">
+                           Size="Size.Small"
+                           OnClick="@(() => GoToEditUser(context.UsertId))">
                     Edit
                 </MudButton>
 
@@ -49,9 +59,36 @@
 
 @code {
     private List<UserListRequestDTO> users = new();
+    private string? SearchText;
 
     protected override async Task OnInitializedAsync()
     {
-        // users = await Http.PostFromJsonAsync<List<UserListRequestDTO>>("api/User") ?? new();
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        var request = new GetAllListRequestDTO
+        {
+            SearchString = SearchText ?? ""
+        };
+
+        var response = await Http.PostAsJsonAsync("user/user-list", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            users = await response.Content.ReadFromJsonAsync<List<UserListRequestDTO>>() ?? new();
+            StateHasChanged();
+        }
+    }
+
+    private void GoToAddUser()
+    {
+        Navigation.NavigateTo("/add-user");
+    }
+
+    private void GoToEditUser(int userId)
+    {
+        Navigation.NavigateTo($"/edit-user/{userId}");
     }
 }
