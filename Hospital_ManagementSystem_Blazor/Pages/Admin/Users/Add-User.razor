@@ -86,10 +86,13 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<List<RoleDTO>>("user/role-list");
-            if (response != null)
+            var request = new RoleDTO();
+
+            var response = await Http.PostAsJsonAsync("user/role-list", request);
+
+            if (response.IsSuccessStatusCode)
             {
-                roles = response;
+                roles = await response.Content.ReadFromJsonAsync<List<RoleDTO>>() ?? new();
             }
         }
         catch (Exception ex)
