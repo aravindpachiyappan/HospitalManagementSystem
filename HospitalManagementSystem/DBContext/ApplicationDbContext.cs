@@ -12,5 +12,6 @@ namespace Hospital_ManagementSystem_Api.DBContext
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> userRoles { get; set; }
+        public DbSet<Department> Departments { get; set; }
     }
 }
